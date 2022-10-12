@@ -16,6 +16,8 @@ from .. import mlog
 import contextlib
 from dataclasses import dataclass
 import urllib.request
+import certifi
+import ssl
 import urllib.error
 import urllib.parse
 import os
@@ -77,7 +79,7 @@ def open_wrapdburl(urlstring: str, allow_insecure: bool = False, have_opt: bool 
     url = whitelist_wrapdb(urlstring)
     if has_ssl:
         try:
-            return T.cast('http.client.HTTPResponse', urllib.request.urlopen(urllib.parse.urlunparse(url), timeout=REQ_TIMEOUT))
+            return T.cast('http.client.HTTPResponse', urllib.request.urlopen(urllib.parse.urlunparse(url), timeout=REQ_TIMEOUT, context=ssl.create_default_context(cafile=certifi.where())))
         except urllib.error.URLError as excp:
             msg = f'WrapDB connection failed to {urlstring} with error {excp}.'
             if isinstance(excp.reason, ssl.SSLCertVerificationError):
@@ -99,7 +101,7 @@ def open_wrapdburl(urlstring: str, allow_insecure: bool = False, have_opt: bool 
     # If we got this far, allow_insecure was manually passed
     nossl_url = url._replace(scheme='http')
     try:
-        return T.cast('http.client.HTTPResponse', urllib.request.urlopen(urllib.parse.urlunparse(nossl_url), timeout=REQ_TIMEOUT))
+        return T.cast('http.client.HTTPResponse', urllib.request.urlopen(urllib.parse.urlunparse(nossl_url), timeout=REQ_TIMEOUT, context=ssl.create_default_context(cafile=certifi.where())))
     except urllib.error.URLError as excp:
         raise WrapException(f'WrapDB connection failed to {urlstring} with error {excp}')
 
@@ -564,7 +566,7 @@ class Resolver:
         else:
             try:
                 req = urllib.request.Request(urlstring, headers={'User-Agent': f'mesonbuild/{coredata.version}'})
-                resp = urllib.request.urlopen(req, timeout=REQ_TIMEOUT)
+                resp = urllib.request.urlopen(req, timeout=REQ_TIMEOUT, context=ssl.create_default_context(cafile=certifi.where()))
             except urllib.error.URLError as e:
                 mlog.log(str(e))
                 raise WrapException(f'could not get {urlstring} is the internet available?')
