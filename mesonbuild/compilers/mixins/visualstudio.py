@@ -133,7 +133,10 @@ class VisualStudioLikeCompiler(Compiler, metaclass=abc.ABCMeta):
         assert self.linker is not None
         self.linker.machine = self.machine
         if mesonlib.version_compare(self.version, '<19.00'):
-            self.always_args.remove('/utf-8')
+            try:
+                self.always_args.remove('/utf-8')
+            except ValueError:
+                pass
 
     # Override CCompiler.get_always_args
     def get_always_args(self) -> T.List[str]:

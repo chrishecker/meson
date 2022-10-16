@@ -133,7 +133,8 @@ class WindowsModule(ExtensionModule):
             # format, which can be passed directly to LINK (apparently LINK uses
             # CVTRES internally to convert this to a COFF object)
             suffix = 'res'
-            res_args = extra_args + ['/nologo', '/fo@OUTPUT@', '@INPUT@']
+            # res_args = extra_args + ['/nologo', '/fo@OUTPUT@', '@INPUT@']
+            res_args = extra_args + ['/fo@OUTPUT@', '@INPUT@']            
         elif rescomp_type == ResourceCompilerType.windres:
             # ld only supports object files, so windres is used to generate a
             # COFF object
